@@ -159,6 +159,13 @@ Once installation and configuration are complete, run the application with this 
 python3 HexSecGPT.py
 ```
 
+## 📽️ Demo Setup
+
+▶️ YouTube Demo:  
+[https://www.youtube.com/watch?v=EM08JC4Mv6c](https://www.youtube.com/watch?v=EM08JC4Mv6c)
+
+
 The first time you run it, you will be prompted to enter your API key. It will be saved locally for future sessions.
+
 
 
