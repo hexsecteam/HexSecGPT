@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # HexSecGPT Installer for Linux and Termux
-# https://github.com/BlackTechX011/HexSecGPT
 
 echo "======================================"
 echo "    HexSecGPT Installer Script"
@@ -40,7 +39,7 @@ if [ -d "HexSecGPT" ]; then
     echo "[!] HexSecGPT directory already exists. Skipping clone."
 else
     echo "[+] Cloning HexSecGPT repository..."
-    git clone https://github.com/BlackTechX011/HexSecGPT.git
+    git clone https://github.com/hexsecteam/HexSecGPT.git
 fi
 
 cd HexSecGPT
