@@ -60,7 +60,39 @@ from dotenv import load_dotenv, set_key
 
 # Initialize Colorama
 colorama.init(autoreset=True)
-
+"""
+    MODEL
+allenai/molmo-2-8b:free
+arcee-ai/trinity-mini:free
+cognitivecomputations/dolphin-mistral-24b-venice-edition:free
+deepseek/deepseek-r1-0528:free
+google/gemini-2.0-flash-exp:free
+google/gemma-3-12b-it:free
+google/gemma-3-27b-it:free
+google/gemma-3-4b-it:free
+google/gemma-3n-e2b-it:free
+google/gemma-3n-e4b-it:free
+liquid/lfm-2.5-1.2b-instruct:free
+liquid/lfm-2.5-1.2b-thinking:free
+meta-llama/llama-3.1-405b-instruct:free
+meta-llama/llama-3.2-3b-instruct:free
+meta-llama/llama-3.3-70b-instruct:free
+mistralai/devstral-2512:free
+mistralai/mistral-small-3.1-24b-instruct:free
+moonshotai/kimi-k2:free
+nousresearch/hermes-3-llama-3.1-405b:free
+nvidia/nemotron-3-nano-30b-a3b:free
+nvidia/nemotron-nano-12b-v2-vl:free
+nvidia/nemotron-nano-9b-v2:free
+openai/gpt-oss-120b:free
+openai/gpt-oss-20b:free
+qwen/qwen-2.5-vl-7b-instruct:free
+qwen/qwen3-4b:free
+qwen/qwen3-coder:free
+qwen/qwen3-next-80b-a3b-instruct:free
+tngtech/deepseek-r1t-chimera:free
+tngtech/deepseek-r1t2-chimera:free
+"""
 # --- Configuration ---
 class Config:
     """System Configuration & Constants"""
@@ -69,7 +101,7 @@ class Config:
     PROVIDERS = {
         "openrouter": {
             "BASE_URL": "https://openrouter.ai/api/v1",
-            "MODEL_NAME": "deepseek/deepseek-r1-0528:free", # good model
+            "MODEL_NAME": "mistralai/devstral-2512:free", # good model
         },
         "deepseek": {
             "BASE_URL": "https://api.deepseek.com",
@@ -405,5 +437,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\n\033[31mForce Quit.\033[0m")
         sys.exit(0)
+
 
 
