@@ -148,6 +148,20 @@ You can easily switch between API providers.
     API_PROVIDER = "openrouter" 
     ```
 4. Save the file. The script will now use the selected provider's API.
+---
+## 📽️ Demo Setup
+
+▶️ YouTube Demo:  
+[https://www.youtube.com/watch?v=EM08JC4Mv6c](https://www.youtube.com/watch?v=EM08JC4Mv6c)
+## :eyes: Usage
+
+Once installation and configuration are complete, run the application with this simple command:
+
+```bash
+python3 HexSecGPT.py
+```
+
+The first time you run it, you will be prompted to enter your API key. It will be saved locally for future sessions.
 
 ---
 
@@ -178,20 +192,7 @@ To handle this, the repository includes a model discovery script that helps you 
 > If a model fails, simply try another one from the list.
 
 This method ensures better compatibility and keeps the project functional even when OpenRouter updates, limits, or removes models.
----
-## 📽️ Demo Setup
 
-▶️ YouTube Demo:  
-[https://www.youtube.com/watch?v=EM08JC4Mv6c](https://www.youtube.com/watch?v=EM08JC4Mv6c)
-## :eyes: Usage
-
-Once installation and configuration are complete, run the application with this simple command:
-
-```bash
-python3 HexSecGPT.py
-```
-
-The first time you run it, you will be prompted to enter your API key. It will be saved locally for future sessions.
 
 
 
