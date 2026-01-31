@@ -150,6 +150,35 @@ You can easily switch between API providers.
 4. Save the file. The script will now use the selected provider's API.
 
 ---
+
+## 🔄 Model Compatibility & Troubleshooting (OpenRouter)
+
+Some OpenRouter models may become unavailable, restricted, or stop working over time.
+
+To handle this, the repository includes a model discovery script that helps you identify which FREE OpenRouter models are currently available.
+
+### ⚠️ If the AI chat is not working
+
+1. Open the SeeOpenRouterFreeModels.py script included in the repository  
+2. Insert your own OpenRouter API key into the script  
+3. Run the script python SeeOpenRouterFreeModels.py
+4. The script will list all currently available FREE models  
+5. Choose one of the working models from the output  
+
+### 🔧 Update the provider configuration
+
+- Navigate to the provider file in the source code  
+- Replace the existing model name with one of the working free models  
+
+![Provider model configuration example](img/provider-model-example.jpg)
+
+- Save the file and restart the application  
+
+> ⚠️ Note: Some free models may not work correctly or may be temporarily disabled by OpenRouter.  
+> If a model fails, simply try another one from the list.
+
+This method ensures better compatibility and keeps the project functional even when OpenRouter updates, limits, or removes models.
+---
 ## 📽️ Demo Setup
 
 ▶️ YouTube Demo:  
@@ -163,6 +192,7 @@ python3 HexSecGPT.py
 ```
 
 The first time you run it, you will be prompted to enter your API key. It will be saved locally for future sessions.
+
 
 
 
