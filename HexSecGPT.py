@@ -61,7 +61,7 @@ from dotenv import load_dotenv, set_key
 # Initialize Colorama
 colorama.init(autoreset=True)
 """
-    MODEL
+    MODEL FREE : run the SeeOpenRouterFreeModels.py to see all new free model
 allenai/molmo-2-8b:free
 arcee-ai/trinity-mini:free
 cognitivecomputations/dolphin-mistral-24b-venice-edition:free
@@ -437,6 +437,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\n\033[31mForce Quit.\033[0m")
         sys.exit(0)
+
 
 
 
