@@ -167,7 +167,7 @@ To handle this, the repository includes a model discovery script that helps you 
 
 ### 🔧 Update the provider configuration
 
-- Navigate to the provider file in the source code  
+- Navigate to the provider file in the source code HexSecGPT.py
 - Replace the existing model name with one of the working free models  
 
 ![Provider model configuration example](img/provider-model-example.jpg)
@@ -192,6 +192,7 @@ python3 HexSecGPT.py
 ```
 
 The first time you run it, you will be prompted to enter your API key. It will be saved locally for future sessions.
+
 
 
 
