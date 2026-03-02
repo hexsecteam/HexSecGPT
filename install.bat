@@ -49,6 +49,6 @@ echo To run HexSecGPT, run this command in this terminal:
 echo.
 echo python HexSecGPT.py
 echo.
-echo Don't forget to get your API key from OpenRouter or DeepSeek!
+echo Don't forget to prepare your API key for OpenRouter, DeepSeek, or any custom OpenAI-compatible provider!
 echo ======================================
 pause

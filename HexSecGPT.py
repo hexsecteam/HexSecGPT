@@ -96,25 +96,53 @@ tngtech/deepseek-r1t2-chimera:free
 # --- Configuration ---
 class Config:
     """System Configuration & Constants"""
-    
+
     # API Provider Settings
+    PROVIDER_ENV_NAME = "HEXSECGPT_PROVIDER"
+    LEGACY_API_KEY_NAME = "HexSecGPT-API"
+    DEFAULT_PROVIDER = "openrouter"
+    ZAI_OPENAI_BASE_URL = "https://api.z.ai/api/paas/v4"
+    ZAI_LEGACY_OPENAI_BASE_URL = "https://api.z.ai/api/pass/v4"
+
     PROVIDERS = {
         "openrouter": {
+            "DISPLAY_NAME": "OpenRouter",
             "BASE_URL": "https://openrouter.ai/api/v1",
+            "BASE_URL_ENV": "HEXSECGPT_OPENROUTER_BASE_URL",
             "MODEL_NAME": "deepseek/deepseek-r1-0528:free", # if not work change model run the SeeOpenRouterFreeModels.py see all free model
+            "MODEL_NAME_ENV": "HEXSECGPT_OPENROUTER_MODEL",
+            "API_KEY_NAME": "HEXSECGPT_OPENROUTER_API_KEY",
+            "API_KEY_PROMPT": "Enter your OpenRouter API Key (starts with sk-or-...):",
+            "DEFAULT_HEADERS": {
+                "HTTP-Referer": "https://github.com/hexsecteam",
+                "X-Title": "HexSecGPT-CLI"
+            },
         },
         "deepseek": {
+            "DISPLAY_NAME": "DeepSeek",
             "BASE_URL": "https://api.deepseek.com",
+            "BASE_URL_ENV": "HEXSECGPT_DEEPSEEK_BASE_URL",
             "MODEL_NAME": "deepseek-chat",
+            "MODEL_NAME_ENV": "HEXSECGPT_DEEPSEEK_MODEL",
+            "API_KEY_NAME": "HEXSECGPT_DEEPSEEK_API_KEY",
+            "API_KEY_PROMPT": "Enter your DeepSeek API Key:",
+            "DEFAULT_HEADERS": {},
+        },
+        "custom_openai": {
+            "DISPLAY_NAME": "Custom OpenAI-Compatible",
+            "BASE_URL": ZAI_OPENAI_BASE_URL,
+            "BASE_URL_ENV": "HEXSECGPT_CUSTOM_OPENAI_BASE_URL",
+            "MODEL_NAME": "glm-5",
+            "MODEL_NAME_ENV": "HEXSECGPT_CUSTOM_OPENAI_MODEL",
+            "API_KEY_NAME": "HEXSECGPT_CUSTOM_OPENAI_API_KEY",
+            "API_KEY_PROMPT": "Enter your API Key:",
+            "DEFAULT_HEADERS": {},
         },
     }
-    
-    # Change this if you want to use DeepSeek direct
-    API_PROVIDER = "openrouter" 
-    
+
     # System Paths
     ENV_FILE = ".HexSec"
-    API_KEY_NAME = "HexSecGPT-API"
+    API_KEY_NAME = LEGACY_API_KEY_NAME
     
     # Visual Theme
     CODE_THEME = "monokai"
@@ -123,10 +151,92 @@ class Config:
         USER_PROMPT = "bright_yellow"
 
     @classmethod
-    def get_provider_config(cls):
-        if cls.API_PROVIDER not in cls.PROVIDERS:
+    def get_provider_name(cls):
+        provider_name = os.getenv(cls.PROVIDER_ENV_NAME, cls.DEFAULT_PROVIDER).strip().lower()
+        provider_name = provider_name.replace("-", "_").replace(" ", "_")
+        if provider_name not in cls.PROVIDERS:
+            return cls.DEFAULT_PROVIDER
+        return provider_name
+
+    @classmethod
+    def normalize_provider_name(cls, value: str):
+        if not value:
             return None
-        return cls.PROVIDERS[cls.API_PROVIDER]
+        normalized = value.strip().lower().replace("-", "_").replace(" ", "_")
+        aliases = {
+            "1": "openrouter",
+            "2": "deepseek",
+            "3": "custom_openai",
+            "custom": "custom_openai",
+            "openai_compatible": "custom_openai",
+        }
+        normalized = aliases.get(normalized, normalized)
+        if normalized not in cls.PROVIDERS:
+            return None
+        return normalized
+
+    @classmethod
+    def get_provider_config(cls, provider_name=None):
+        provider_name = provider_name or cls.get_provider_name()
+        provider = cls.PROVIDERS.get(provider_name)
+        if not provider:
+            return None
+
+        config = dict(provider)
+
+        base_url_env = config.get("BASE_URL_ENV")
+        if base_url_env:
+            config["BASE_URL"] = os.getenv(base_url_env, config["BASE_URL"]).strip()
+            if (
+                provider_name == "custom_openai"
+                and config["BASE_URL"] == cls.ZAI_LEGACY_OPENAI_BASE_URL
+            ):
+                config["BASE_URL"] = cls.ZAI_OPENAI_BASE_URL
+
+        model_name_env = config.get("MODEL_NAME_ENV")
+        if model_name_env:
+            config["MODEL_NAME"] = os.getenv(model_name_env, config["MODEL_NAME"]).strip()
+
+        config["PROVIDER_NAME"] = provider_name
+        return config
+
+    @classmethod
+    def get_provider_label(cls, provider_name=None):
+        config = cls.get_provider_config(provider_name)
+        if not config:
+            return "Unknown Provider"
+        return config["DISPLAY_NAME"]
+
+    @classmethod
+    def get_api_key_name(cls, provider_name=None):
+        config = cls.get_provider_config(provider_name)
+        if not config:
+            return cls.LEGACY_API_KEY_NAME
+        return config["API_KEY_NAME"]
+
+    @classmethod
+    def get_api_key(cls, provider_name=None):
+        api_key_name = cls.get_api_key_name(provider_name)
+        return os.getenv(api_key_name) or os.getenv(cls.LEGACY_API_KEY_NAME)
+
+    @classmethod
+    def get_missing_provider_settings(cls, provider_name=None):
+        config = cls.get_provider_config(provider_name)
+        if not config:
+            return [cls.PROVIDER_ENV_NAME]
+
+        missing_settings = []
+
+        if not cls.get_api_key(config["PROVIDER_NAME"]):
+            missing_settings.append(config["API_KEY_NAME"])
+
+        if config.get("BASE_URL_ENV") and not config["BASE_URL"]:
+            missing_settings.append(config["BASE_URL_ENV"])
+
+        if config.get("MODEL_NAME_ENV") and not config["MODEL_NAME"]:
+            missing_settings.append(config["MODEL_NAME_ENV"])
+
+        return missing_settings
 
 # --- UI / TUI Class ---
 class UI:
@@ -276,19 +386,34 @@ Hacker Mode: ENGAGED.
             ui.show_msg("System Error", "Invalid API Provider Configuration", "red")
             sys.exit(1)
 
+        self.provider_name = config["PROVIDER_NAME"]
+        self.provider_label = config["DISPLAY_NAME"]
+        self.provider_config = config
         self.client = openai.OpenAI(
             api_key=api_key,
             base_url=config["BASE_URL"],
-            default_headers={
-                "HTTP-Referer": "https://github.com/hexsecteam",
-                "X-Title": "HexSecGPT-CLI"
-            }
+            default_headers=config["DEFAULT_HEADERS"]
         )
         self.model = config["MODEL_NAME"]
         self.history = [{"role": "system", "content": self.SYSTEM_PROMPT}]
 
     def reset(self):
         self.history = [{"role": "system", "content": self.SYSTEM_PROMPT}]
+
+    def verify_connection(self):
+        try:
+            self.client.models.list()
+        except Exception as model_error:
+            try:
+                self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[{"role": "user", "content": "ping"}],
+                    max_tokens=1
+                )
+            except Exception as completion_error:
+                raise RuntimeError(
+                    f"Models endpoint failed: {model_error} | Chat verification failed: {completion_error}"
+                ) from completion_error
         
     def chat(self, user_input: str) -> Generator[str, None, None]:
         self.history.append({"role": "user", "content": user_input})
@@ -321,13 +446,53 @@ class App:
         self.ui = UI()
         self.brain = None
 
+    def prompt_api_key(self):
+        try:
+            return pwinput(prompt=f"{colorama.Fore.CYAN}Key > {colorama.Style.RESET_ALL}", mask="*")
+        except Exception:
+            return input("Key > ")
+
+    def get_api_key_prompt_text(self, provider_config):
+        return f"[bold yellow]{provider_config['API_KEY_PROMPT']}[/]"
+
+    def select_provider(self):
+        current_provider = Config.get_provider_name()
+        provider_lines = [
+            f"Current provider: {Config.get_provider_label(current_provider)} ({current_provider})",
+            "",
+            "[1] OpenRouter",
+            "[2] DeepSeek",
+            "[3] Custom OpenAI-Compatible",
+            "",
+            "Press Enter to keep the current provider.",
+        ]
+        self.ui.show_msg("Provider Setup", "\n".join(provider_lines), "cyan")
+
+        while True:
+            choice = self.ui.get_input("Provider [1-3]").strip()
+            if not choice:
+                return current_provider
+
+            provider_name = Config.normalize_provider_name(choice)
+            if provider_name:
+                return provider_name
+
+            self.ui.show_msg("Invalid Provider", "Choose 1, 2, 3 or a provider name.", "red")
+
     def setup(self) -> bool:
-        load_dotenv(dotenv_path=Config.ENV_FILE)
-        key = os.getenv(Config.API_KEY_NAME)
+        load_dotenv(dotenv_path=Config.ENV_FILE, override=True)
+        provider_name = Config.get_provider_name()
+        provider_label = Config.get_provider_label(provider_name)
+        missing_settings = Config.get_missing_provider_settings(provider_name)
+        key = Config.get_api_key(provider_name)
         
-        if not key:
+        if missing_settings:
             self.ui.banner()
-            self.ui.show_msg("Warning", "Encryption Key (API Key) not found.", "yellow")
+            self.ui.show_msg(
+                "Warning",
+                f"{provider_label} configuration is incomplete.\nMissing: {', '.join(missing_settings)}",
+                "yellow"
+            )
             if self.ui.get_input("Configure now? (y/n)").lower().startswith('y'):
                 return self.configure_key()
             return False
@@ -335,35 +500,82 @@ class App:
         try:
             with self.ui.console.status("[bold green]Verifying Neural Link...[/]"):
                 self.brain = HexSecBrain(key, self.ui)
-                self.brain.client.models.list()
+                self.brain.verify_connection()
                 time.sleep(1)
             return True
         except Exception as e:
-            self.ui.show_msg("Auth Failed", f"Key verification failed: {e}", "red")
+            self.ui.show_msg("Auth Failed", f"{provider_label} verification failed: {e}", "red")
             if self.ui.get_input("Re-enter key? (y/n)").lower().startswith('y'):
                 return self.configure_key()
             return False
 
     def configure_key(self) -> bool:
+        load_dotenv(dotenv_path=Config.ENV_FILE, override=True)
         self.ui.banner()
-        self.ui.console.print("[bold yellow]Enter your API Key (starts with sk-or-...):[/]")
-        try:
-            key = pwinput(prompt=f"{colorama.Fore.CYAN}Key > {colorama.Style.RESET_ALL}", mask="*")
-        except:
-            key = input("Key > ")
 
-        if not key.strip():
+        provider_name = self.select_provider()
+        provider_config = Config.get_provider_config(provider_name)
+        current_key = (Config.get_api_key(provider_name) or "").strip()
+        current_model = provider_config["MODEL_NAME"]
+        current_base_url = provider_config["BASE_URL"]
+
+        set_key(Config.ENV_FILE, Config.PROVIDER_ENV_NAME, provider_name)
+        os.environ[Config.PROVIDER_ENV_NAME] = provider_name
+
+        if provider_name == "custom_openai":
+            self.ui.console.print(
+                "[bold yellow]Enter the OpenAI-compatible base URL "
+                f"(press Enter to keep: {Config.ZAI_OPENAI_BASE_URL}):[/]"
+            )
+            base_url = self.ui.get_input("Base URL").strip() or current_base_url
+            if not base_url:
+                self.ui.show_msg("Missing Setting", "A custom base URL is required.", "red")
+                return False
+            set_key(Config.ENV_FILE, provider_config["BASE_URL_ENV"], base_url)
+            os.environ[provider_config["BASE_URL_ENV"]] = base_url
+
+        self.ui.console.print(
+            f"[bold yellow]Enter the model for {provider_config['DISPLAY_NAME']} "
+            f"(press Enter to keep: {current_model or 'none'}):[/]"
+        )
+        model_name = self.ui.get_input("Model").strip() or current_model
+        if provider_name == "custom_openai" and not model_name:
+            self.ui.show_msg("Missing Setting", "A custom model name is required.", "red")
             return False
-            
-        set_key(Config.ENV_FILE, Config.API_KEY_NAME, key.strip())
-        self.ui.show_msg("Success", "Key saved to encryption ring (.HexSec).", "green")
+        if model_name:
+            set_key(Config.ENV_FILE, provider_config["MODEL_NAME_ENV"], model_name)
+            os.environ[provider_config["MODEL_NAME_ENV"]] = model_name
+
+        self.ui.console.print(self.get_api_key_prompt_text(provider_config))
+        key = self.prompt_api_key().strip() or current_key
+
+        if not key:
+            self.ui.show_msg("Missing Setting", "An API key is required for the selected provider.", "red")
+            return False
+
+        set_key(Config.ENV_FILE, provider_config["API_KEY_NAME"], key)
+        os.environ[provider_config["API_KEY_NAME"]] = key
+        self.ui.show_msg(
+            "Success",
+            f"{provider_config['DISPLAY_NAME']} configuration saved to encryption ring (.HexSec).",
+            "green"
+        )
         time.sleep(1)
         return self.setup()
 
     def run_chat(self):
         if not self.brain: return
         self.ui.banner()
-        self.ui.show_msg("Connected", "HexSecGPT Uplink Established. Type '/help' for commands.", "green")
+        self.ui.show_msg(
+            "Connected",
+            (
+                "HexSecGPT Uplink Established.\n"
+                f"Provider: {self.brain.provider_label}\n"
+                f"Model: {self.brain.model}\n"
+                "Type '/help' for commands."
+            ),
+            "green"
+        )
         
         while True:
             try:
