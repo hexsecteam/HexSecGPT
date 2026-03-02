@@ -94,6 +94,7 @@ To use this framework, you **must** obtain an API key from a supported provider.
 1.  **Choose a provider:**
     *   **OpenRouter:** Visit [OpenRouter.ai](https://openrouter.ai/keys) to get a free API key. They provide access to a variety of models.
     *   **DeepSeek:** Visit the [DeepSeek Platform](https://platform.deepseek.com/api_keys) for a free API key to use their powerful models.
+    *   **Custom OpenAI-Compatible API:** Use any provider or self-hosted endpoint that exposes an OpenAI-compatible API. The built-in default base URL is `https://api.z.ai/api/paas/v4` with `glm-5` as the default model, and you can override either value if needed.
 
 2.  **Copy your API key.** You will need to paste it into the script when prompted during the first run.
 
@@ -135,19 +136,18 @@ If you prefer to install manually, follow these steps.
 
 ## :wrench: Configuration
 
-You can easily switch between API providers.
+You can switch providers directly from the CLI without editing source code.
 
-1.  Open the `HexSecGPT.py` file in a text editor.
-2.  Locate the `API_PROVIDER` variable at the top of the file.
-3.  Change the value to either `"openrouter"` or `"deepseek"`.
-
-    ```python
-    # HexSecGPT.py
-
-    # Change this value to "deepseek" or "openrouter"
-    API_PROVIDER = "openrouter" 
-    ```
-4. Save the file. The script will now use the selected provider's API.
+1.  Run `python HexSecGPT.py`.
+2.  Open `Configure Security Keys (API Setup)` from the main menu.
+3.  Select one of these providers:
+    *   `OpenRouter`
+    *   `DeepSeek`
+    *   `Custom OpenAI-Compatible`
+4.  Enter the requested settings:
+    *   For OpenRouter and DeepSeek: API key, plus an optional model override.
+    *   For Custom OpenAI-Compatible: base URL, model name, and API key. If you press Enter on the base URL prompt, the app keeps `https://api.z.ai/api/paas/v4`, and if you press Enter on the model prompt, it keeps `glm-5`. The custom API key prompt does not require any `sk-` or `sk-or-` prefix.
+5.  The app stores the selected provider and its credentials in `.HexSec` for future sessions.
 ---
 ## 📽️ Demo Setup
 
@@ -161,7 +161,7 @@ Once installation and configuration are complete, run the application with this 
 python3 HexSecGPT.py
 ```
 
-The first time you run it, you will be prompted to enter your API key. It will be saved locally for future sessions.
+The first time you run it, you will be prompted to configure a provider. Your provider settings and API key are saved locally in `.HexSec` for future sessions.
 
 ---
 
@@ -181,12 +181,13 @@ To handle this, the repository includes a model discovery script that helps you 
 
 ### 🔧 Update the provider configuration
 
-- Navigate to the provider file in the source code HexSecGPT.py
-- Replace the existing model name with one of the working free models  
+- Open `Configure Security Keys (API Setup)` from the CLI
+- Select `OpenRouter`
+- Replace the current model with one of the working free models  
 
 ![Provider model configuration example](img/provider-model-example.jpg)
 
-- Save the file and restart the application  
+- Save the configuration and restart the application if needed  
 
 > ⚠️ Note: Some free models may not work correctly or may be temporarily disabled by OpenRouter.  
 > If a model fails, simply try another one from the list.
